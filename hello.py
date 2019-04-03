@@ -2,6 +2,7 @@
 
 import scrapy
 from scrapy import cmdline
+import json
 
 class BlogSpider(scrapy.Spider):
     """ 
@@ -10,7 +11,7 @@ class BlogSpider(scrapy.Spider):
     """
     name = 'blogspider'
     start_urls = [
-    'https://sou.zhaopin.com/?p=2&jl=489&sf=0&st=0&kw=python%20开发&kt=3',
+    'https://fe-api.zhaopin.com/c/i/sou?pageSize=90&cityId=489&salary=0,0&workExperience=-1&education=-1&companyType=-1&employmentType=-1&jobWelfareTag=-1&kw=python+%E5%BC%80%E5%8F%91&kt=3&=0&at=40d70a1d8be042649b2d0eeda857481d&rt=a3ec336a52b7495fa377b7652c341982&_v=0.71722478&userCode=628987727&x-zp-page-request-id=4fb13fd6b13b42bb84236683878111e2-1554277091018-226942',
     ]
     """
     	Parse method is the default callback method in scrapy
@@ -19,11 +20,8 @@ class BlogSpider(scrapy.Spider):
     	Then you can take the element you want from the reponse object
     """
     def parse(self, response):
-        page = response.url.split("/")[-2]
-        filename = 'quotes-%s.html' % page
-        with open(filename, 'wb') as f:
-            f.write(response.body)
-        print('body of the response is...',response.body)
+    	jasonresult = json.loads(response.body_as_unicode())
+    	print('our target url is....', jasonresult['data']['results'][0]['positionURL'])
 """
 	智联招聘网站分析：
 		入口网页：
@@ -57,10 +55,14 @@ class BlogSpider(scrapy.Spider):
 			"positionURL":"https://jobs.zhaopin.com/CC552061080J00208094805.htm"
 			"positionURL":"https://jobs.zhaopin.com/CC636483920J00126022112.htm"
 			"positionURL":"https://jobs.zhaopin.com/CC603465980J00277521607.htm"
-		页面是jason格式。上面的positionURL是职位的具体连接。一个页面有90个职位链接。
+		页面是Jason格式。上面的positionURL是职位的具体连接。一个页面有90个职位链接。
+			data object -> result list -> in the list, each object has a "positionURL"
+			key-value pair "https://jobs.zhaopin.com/CZ845056730J00224117802.htm",
+
 
 		接下里的任务就是：
 			抓取page-request-id=1 - 100的页面, 就可以得到100*90 = 9000个职位链接。
+			子任务1：给定一个网页，使用scrapy得到json result。然后抓出来想要的90个条目，写入本地的txt文件。
 
 """
 
