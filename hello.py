@@ -3,25 +3,46 @@
 import scrapy
 from scrapy import cmdline
 import json
+import time
 
 class BlogSpider(scrapy.Spider):
     """ 
     	Provide Urls, so that the default start_requests() method
     	will be called upon this urls.
     """
-    name = 'blogspider'
-    start_urls = [
-    'https://fe-api.zhaopin.com/c/i/sou?pageSize=90&cityId=489&salary=0,0&workExperience=-1&education=-1&companyType=-1&employmentType=-1&jobWelfareTag=-1&kw=python+%E5%BC%80%E5%8F%91&kt=3&=0&at=40d70a1d8be042649b2d0eeda857481d&rt=a3ec336a52b7495fa377b7652c341982&_v=0.71722478&userCode=628987727&x-zp-page-request-id=4fb13fd6b13b42bb84236683878111e2-1554277091018-226942',
-    ]
+    # def start_requests(self):
+    name = 'Zhi-lian-zhao-pin-spider'
+    first_half = 'https://fe-api.zhaopin.com/c/i/sou?pageSize=90&cityId=489&salary=0,0&workExperience=-1&education=-1&companyType=-1&employmentType=-1&jobWelfareTag=-1&kw=python+%E5%BC%80%E5%8F%91&kt=3&=0&at=40d70a1d8be042649b2d0eeda857481d&rt=a3ec336a52b7495fa377b7652c341982&_v=0.71722478&userCode=628987727&x-zp-'
+    middle = 'page-request-id='
+    last_half = 'fb13fd6b13b42bb84236683878111e2-1554277091018-226942'
+    urls=[]
+    for i in range(0,100):
+    	newUrl = first_half + middle + str(i) + last_half
+    	urls.append(newUrl)
+    	time.sleep(30)
+    	print('Page ', i)
+    # start_urls is a key word in scrapy to store the target urls.
+    start_urls = urls
+
     """
-    	Parse method is the default callback method in scrapy
+        Parse method is the default callback method in scrapy
     	After parsing through each of the urls,
     	A response object will be returned,
     	Then you can take the element you want from the reponse object
     """
     def parse(self, response):
     	jasonresult = json.loads(response.body_as_unicode())
-    	print('our target url is....', jasonresult['data']['results'][0]['positionURL'])
+    	for i in range(0,90):
+	    	positionUrl = jasonresult['data']['results'][i]['positionURL']
+	    	# Append the info in a the positionUrl file.
+	    	try:
+	    		file = open('positionUrl.txt','a')
+	    		file.write(positionUrl+' ')
+	    		print('a new position url has been written into the local file.')
+	    	except:
+	    		file = open('positionUrl.txt','xa')
+	    		file.write(positionUrl+' ')
+
 """
 	智联招聘网站分析：
 		入口网页：
@@ -62,7 +83,17 @@ class BlogSpider(scrapy.Spider):
 
 		接下里的任务就是：
 			抓取page-request-id=1 - 100的页面, 就可以得到100*90 = 9000个职位链接。
-			子任务1：给定一个网页，使用scrapy得到json result。然后抓出来想要的90个条目，写入本地的txt文件。
+			子任务1：给定一个网页，使用scrapy得到json result。然后抓出来想要的90个条目，写入本地的txt文件。以空格隔开。
+			子任务2: 设定：每分钟访问2次，loop从1-200页的python 开发 智联招聘搜索结果。
+					然后把每个页面上的90个链接找到，写到本地txt文件里。
+			子任务3: 
+					网页分析：职位信息所在class='describtion'
+					设定：每份钟访问3次，设计随机参数，间隔时间[5s,20s]之间。
+					# 数据库选择, 表单设计,如何存储数据
+					9000条职位记录，就算是每条有10个子条目（公司名称，职位描述
+					
+			
+
 
 """
 
