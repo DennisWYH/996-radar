@@ -19,8 +19,9 @@ class BlogSpider(scrapy.Spider):
     for i in range(0,100):
     	newUrl = first_half + middle + str(i) + last_half
     	urls.append(newUrl)
-    	time.sleep(30)
-    	print('Page ', i)
+    	randomTimeGap = 1+ random()*20
+    	time.sleep(randomTimeGap)
+    	print('Page ', i , ' is not processing')
     # start_urls is a key word in scrapy to store the target urls.
     start_urls = urls
 
@@ -34,6 +35,10 @@ class BlogSpider(scrapy.Spider):
     	jasonresult = json.loads(response.body_as_unicode())
     	for i in range(0,90):
 	    	positionUrl = jasonresult['data']['results'][i]['positionURL']
+	    	companyName = 
+	    	description = 
+	    	postDate = 
+	    	city = 
 	    	# Append the info in a the positionUrl file.
 	    	try:
 	    		file = open('positionUrl.txt','a')
